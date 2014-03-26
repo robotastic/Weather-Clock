@@ -2,6 +2,10 @@
 #include <SPI.h>
 #include <WiFi.h>
 
+// you need to user ArduinoIDE 1.02 to load this Sketch unless you have upgraded the firmware on you Wifi Shield
+
+// This needs to be set to False is you are not going to have it connected to your computer with the serial monitor open. With Debug on, the clock will wait for a serial monitor to be connected
+
 const boolean DEBUG = true;
 
 enum conditionType {
@@ -16,7 +20,7 @@ enum conditionType {
 Servo dial;
 
 int conditionsIndex[6] = { 
-  GE, CLEAR, CLOUDY, RAIN, THUNDERSTORM, SNOW}; 
+  1, 1, 9, 12, 11, 20}; 
 
 const char *conditions[][20] = {
   // GE
@@ -180,7 +184,7 @@ void checkRequest() {
         weatherCondition = weatherCondition.substring(1, weatherCondition.length());
         forecast = weatherCondition;
         if(DEBUG) Serial.print("SERVER CONDITION: ");
-        if(DEBUG) Serial.print(weatherCondition);   
+        if(DEBUG) Serial.println(weatherCondition);   
         client.stop(); 
         clockOriented  = false;
         processingData = false;
@@ -228,12 +232,13 @@ void calculateCondition(){
   
   for ( int i = 0; i < ( sizeof(conditionsIndex) / sizeof(int) ); i++ ) {
     int idx = conditionsIndex[i];
-    for (int j = 0; j < ( sizeof(conditions[idx]) / sizeof(String) ); j++ ) {
-      if ( forecast.equals(conditions[idx][j])) {
-        currentCondition = idx;
+    for (int j = 0; j < idx; j++ ) {
+      if ( forecast.equals(conditions[i][j])) {
+        currentCondition = i;
       }
     }
   }
+
   orientClock();
 }
 
@@ -281,10 +286,23 @@ void printWifiData() {
   if(DEBUG) {
     // print your WiFi shield's IP address:
     IPAddress ip = WiFi.localIP();
+    IPAddress gateway;
     Serial.print("IP Address: ");
     Serial.println(ip);
-    Serial.println(ip);
-  
+    // print the SSID of the network you're attached to:
+    Serial.print("SSID: ");
+    Serial.println(WiFi.SSID());
+
+   
+    gateway = WiFi.gatewayIP();
+    Serial.print("GATEWAY: ");
+    Serial.println(gateway);
+   
+    // print the received signal strength:
+    long rssi = WiFi.RSSI();
+    Serial.print("signal strength (RSSI):");
+    Serial.print(rssi);
+    Serial.println(" dBm");
     // print your MAC address:
     byte mac[6];  
     WiFi.macAddress(mac);
